@@ -19,8 +19,8 @@ from omni.isaac.core.utils import (  # noqa E402
 from g1_robot_sim import assets
 
 
-EVN_PATH = os.path.dirname(assets.__file__) + "/env/default_environment.usd"
-BACKGROUND_STAGE_PATH = "/background"
+EVN_PATH = os.path.dirname(assets.__file__) + "/env/factory/Collected_warehouse_with_forklifts/warehouse.usd"
+BACKGROUND_STAGE_PATH = "/World/Warehouse"
 stage.add_reference_to_stage(EVN_PATH, BACKGROUND_STAGE_PATH)
 
 
