@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-PACKAGE_NAME = "vr_robot_sim"
+PACKAGE_NAME = "g1_robot_sim"
 
 # Read dependencies from requirements.txt file
 with open('requirements.txt', 'r') as f:

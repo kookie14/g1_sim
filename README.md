@@ -1,4 +1,4 @@
-# vr_robot_sim
+# g1_robot_sim
 
 ## Introduction
 

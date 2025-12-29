@@ -114,7 +114,7 @@ class Scene:
     # def create_robot_omnigraph(
     #         self,
     #         robot_name: str,
-    #         graph_name: str = "vr_robot_graph.yml",
+    #         graph_name: str = "g1_robot_graph.yml",
     # ) -> Graph:
     #     config_dir = os.path.dirname(graph_config.__file__)
     #     config_path_ = os.path.join(config_dir, graph_name)
