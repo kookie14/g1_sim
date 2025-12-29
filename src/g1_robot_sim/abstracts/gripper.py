@@ -7,8 +7,8 @@ from isaacsim.robot.manipulators.grippers import ParallelGripper, SurfaceGripper
 from isaacsim.core.utils.stage import is_stage_loading
 from isaacsim.asset.importer.urdf import _urdf
 import omni.graph.core as og
-from g1_robot_sim.abstracts.graph import Graph
-from g1_robot_sim import graph_config
+from src.g1_robot_sim.abstracts.graph import Graph
+from src.g1_robot_sim import graph_config
 
 # https://docs.isaacsim.omniverse.nvidia.com/4.5.0/py/source/extensions/isaacsim.robot.manipulators/docs/index.html#isaacsim.robot.manipulators.grippers.ParallelGripper
 class Robotiq2F140(ParallelGripper):

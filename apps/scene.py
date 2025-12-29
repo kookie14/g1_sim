@@ -30,9 +30,9 @@ from omni.isaac.core.utils.types import ArticulationAction
 # from sensor_msgs.msg import JointState
 
 # Graph
-from g1_robot_sim import graph_config
-from g1_robot_sim.abstracts.graph import Graph
-from g1_robot_sim.abstracts.sensor import IMU, RealSense ,KannalaBrandt
+from src.g1_robot_sim import graph_config
+from src.g1_robot_sim.abstracts.graph import Graph
+from src.g1_robot_sim.abstracts.sensor import IMU, RealSense ,KannalaBrandt
 
 MODEL_DESCRIPTIONS_PATH = "/home/rtx3/cuctt14/LOCOMOTION/unitree_model/G1/29dof/usd/g1_29dof_rev_1_0"
 

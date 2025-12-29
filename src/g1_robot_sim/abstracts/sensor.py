@@ -11,8 +11,8 @@ import omni.graph.core as og
 from isaacsim.sensors.camera import Camera
 from isaacsim.sensors.physics import IMUSensor
 
-from g1_robot_sim import graph_config
-from g1_robot_sim.abstracts.graph import Graph
+from src.g1_robot_sim import graph_config
+from src.g1_robot_sim.abstracts.graph import Graph
 
 
 class BaseCamera(Camera):

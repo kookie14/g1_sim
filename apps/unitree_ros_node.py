@@ -11,7 +11,7 @@ from rclpy.qos import QoSProfile, QoSReliabilityPolicy
 from ros_node import RosNode
 from sensor_msgs.msg import JointState
 from unitree_hg.msg import LowCmd, LowState
-from g1_robot_sim.abstracts.sensor import IMU
+from src.g1_robot_sim.abstracts.sensor import IMU
 
 
 def sim_joints_state_and_imu_to_lowstate(

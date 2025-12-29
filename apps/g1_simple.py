@@ -16,7 +16,7 @@ from omni.isaac.core.utils import (  # noqa E402
 
 # extensions.enable_extension("omni.isaac.ros2_bridge")
 
-from g1_robot_sim import assets
+from src.g1_robot_sim import assets
 
 
 EVN_PATH = os.path.dirname(assets.__file__) + "/env/factory/Collected_warehouse_with_forklifts/warehouse.usd"
