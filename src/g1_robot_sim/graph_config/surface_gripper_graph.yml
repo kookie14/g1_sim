@@ -1,0 +1,83 @@
+nodes:
+  # Inputs
+  - ["OnImpulseClose", "omni.graph.action.OnImpulseEvent"]
+  - ["OnImpulseOpen", "omni.graph.action.OnImpulseEvent"]
+  - ["OnKeyboardInputClose", "omni.graph.action.OnKeyboardInput"]
+  - ["OnKeyboardInputOpen", "omni.graph.action.OnKeyboardInput"]
+  # Ticks
+  - ["OnPlaybackTick", "omni.graph.action.OnPlaybackTick"]
+  - ["SurfaceGripperNode", "omni.isaac.surface_gripper.SurfaceGripper"]
+  # ROS
+  - ["ROS2Context", "isaacsim.ros2.bridge.ROS2Context"]
+  - ["ROS2Publisher", "isaacsim.ros2.bridge.ROS2Publisher"]
+  - ["IsaacReadSimulationTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"]
+  - ["IsaacTimeSplitter", "omni.isaac.core_nodes.IsaacTimeSplitter"]
+  # Position Selection
+  - ["ConstantDoubleOpen", "omni.graph.nodes.ConstantDouble"]
+  - ["ConstantDoubleClose", "omni.graph.nodes.ConstantDouble"]
+  - ["SelectIfPosition", "omni.graph.nodes.SelectIf"]
+  - ["ConstructArrayPosition", "omni.graph.nodes.ConstructArray"]
+  # Gripper State Debug
+  - ["ConstantStringOpen", "omni.graph.nodes.ConstantString"]
+  - ["ConstantStringClose", "omni.graph.nodes.ConstantString"]
+  - ["SelectIfGripperState", "omni.graph.nodes.SelectIf"]
+  - ["PrintGripperState", "omni.graph.ui_nodes.PrintText"]
+
+connections:
+  # Inputs
+  - ["OnImpulseClose.outputs:execOut", "SurfaceGripperNode.inputs:Close"]
+  - ["OnImpulseOpen.outputs:execOut", "SurfaceGripperNode.inputs:Open"]
+  - ["OnKeyboardInputClose.outputs:pressed", "SurfaceGripperNode.inputs:Close"]
+  - ["OnKeyboardInputOpen.outputs:pressed", "SurfaceGripperNode.inputs:Open"]
+  # Ticks
+  - ["OnPlaybackTick.outputs:tick", "ROS2Publisher.inputs:execIn"]
+  - ["OnPlaybackTick.outputs:tick", "PrintGripperState.inputs:execIn"]
+  # ROS
+  - ["ROS2Context.outputs:context", "ROS2Publisher.inputs:context"]
+  - [
+      "IsaacReadSimulationTime.outputs:simulationTime",
+      "IsaacTimeSplitter.inputs:time",
+    ]
+  # Cannot connect until ROS2Publisher message type is set
+  #   - ["IsaacTimeSplitter.outputs:seconds", "ROS2Publisher.inputs:header:stamp:sec"]
+  #   - ["IsaacTimeSplitter.outputs:nanoseconds", "ROS2Publisher.inputs:header:stamp:nanosec"]
+  # Position Selection
+  - ["ConstantDoubleOpen.inputs:value", "SelectIfPosition.inputs:ifFalse"]
+  - ["ConstantDoubleClose.inputs:value", "SelectIfPosition.inputs:ifTrue"]
+  - ["SurfaceGripperNode.outputs:Closed", "SelectIfPosition.inputs:condition"]
+  - ["SelectIfPosition.outputs:result", "ConstructArrayPosition.inputs:input0"]
+  # Gripper State Debug
+  - ["ConstantStringOpen.inputs:value", "SelectIfGripperState.inputs:ifFalse"]
+  - ["ConstantStringClose.inputs:value", "SelectIfGripperState.inputs:ifTrue"]
+  - [
+      "SurfaceGripperNode.outputs:Closed",
+      "SelectIfGripperState.inputs:condition",
+    ]
+  - ["SelectIfGripperState.outputs:result", "PrintGripperState.inputs:text"]
+
+values:
+  # Inputs
+  - ["OnImpulseClose.inputs:onlyPlayback", False]
+  - ["OnImpulseOpen.inputs:onlyPlayback", False]
+  - ["OnKeyboardInputClose.inputs:keyIn", "C"]
+  - ["OnKeyboardInputClose.inputs:onlyPlayback", False]
+  - ["OnKeyboardInputOpen.inputs:keyIn", "O"]
+  - ["OnKeyboardInputOpen.inputs:onlyPlayback", False]
+  - ["SurfaceGripperNode.inputs:ParentRigidBody", { prim_path }]
+  - [
+      "SurfaceGripperNode.inputs:GripPosition",
+      gripper_force_origin_prim.prim_path,
+    ]
+  # ROS
+  - ["IsaacReadSimulationTime.inputs:resetOnStop", False]
+  - ["ROS2Publisher.inputs:messagePackage", "sensor_msgs"]
+  - ["ROS2Publisher.inputs:messageName", "JointState"]
+  - ["ROS2Publisher.inputs:nodeNamespace", "surface_gripper"]
+  - ["ROS2Publisher.inputs:topicName", "joint_states"]
+  # Position Selection
+  - ["ConstantDoubleOpen.inputs:value", 0.0]
+  - ["ConstantDoubleClose.inputs:value", 1.0]
+  # Gripper State Debug
+  - ["ConstantStringOpen.inputs:value", "Open"]
+  - ["ConstantStringClose.inputs:value", "Close"]
+  - ["PrintGripperState.inputs:toScreen", True]

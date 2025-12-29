@@ -1,0 +1,49 @@
+nodes:
+  - ["OnPlaybackTick", "omni.graph.action.OnPlaybackTick"]
+  - ["OnSimFrame", "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame"]
+  - ["CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"]
+  - ["RGBCamera", "isaacsim.ros2.bridge.ROS2CameraHelper"]
+  - ["DepthCamera", "isaacsim.ros2.bridge.ROS2CameraHelper"]
+  - ["PointCloud", "isaacsim.ros2.bridge.ROS2CameraHelper"]
+  - ["CameraInfo", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"]
+
+connections:
+  - ["OnPlaybackTick.outputs:tick", "OnSimFrame.inputs:execIn"]
+  - ["OnSimFrame.outputs:step", "CreateRenderProduct.inputs:execIn"]
+  - ["CreateRenderProduct.outputs:execOut", "RGBCamera.inputs:execIn"]
+  - ["CreateRenderProduct.outputs:renderProductPath", "RGBCamera.inputs:renderProductPath"]
+  - ["CreateRenderProduct.outputs:execOut", "DepthCamera.inputs:execIn"]
+  - ["CreateRenderProduct.outputs:renderProductPath", "DepthCamera.inputs:renderProductPath"]
+  - ["CreateRenderProduct.outputs:execOut", "PointCloud.inputs:execIn"]
+  - ["CreateRenderProduct.outputs:renderProductPath", "PointCloud.inputs:renderProductPath"]
+  - ["CreateRenderProduct.outputs:execOut", "CameraInfo.inputs:execIn"]
+  - ["CreateRenderProduct.outputs:renderProductPath", "CameraInfo.inputs:renderProductPath"]
+
+values:
+  - ["CreateRenderProduct.inputs:cameraPrim", "${prim_path}"]
+  - ["CreateRenderProduct.inputs:height", "${height}"]
+  - ["CreateRenderProduct.inputs:width", "${width}"]
+
+  - ["CameraInfo.inputs:useSystemTime", True]
+
+  - ["RGBCamera.inputs:frameId", "${frame_id}"]
+  - ["RGBCamera.inputs:topicName", "${cam_color_topic}"]
+  - ["RGBCamera.inputs:type", "rgb"]
+  - ["RGBCamera.inputs:enabled", True]
+  - ["RGBCamera.inputs:useSystemTime", True]
+
+  - ["DepthCamera.inputs:frameId", "${frame_id}"]
+  - ["DepthCamera.inputs:topicName", "${cam_depth_topic}"]
+  - ["DepthCamera.inputs:type", "depth"]
+  - ["DepthCamera.inputs:enabled", True]
+  - ["DepthCamera.inputs:useSystemTime", True]
+  
+  - ["PointCloud.inputs:frameId", "${frame_id}"]
+  - ["PointCloud.inputs:topicName", "${cam_pointcloud_topic}"]
+  - ["PointCloud.inputs:type", "depth_pcl"]
+  - ["PointCloud.inputs:enabled", True]
+  - ["PointCloud.inputs:useSystemTime", True]
+
+  - ["CameraInfo.inputs:frameId", "${frame_id}"]
+  - ["CameraInfo.inputs:topicName", "${cam_info_topic}"]
+  - ["CameraInfo.inputs:enabled", True]

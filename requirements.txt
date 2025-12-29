@@ -1,0 +1,6 @@
+torch>=2.5.1
+isaacsim==5.1.0
+isaacsim-extscache-physics==5.1.0
+isaacsim-extscache-kit==5.1.0
+isaacsim-extscache-kit-sdk==5.1.0
+numpy

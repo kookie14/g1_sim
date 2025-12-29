@@ -1,0 +1,31 @@
+nodes:
+  - ["OnPlaybackTick", "omni.graph.action.OnPlaybackTick"]
+  - ["OnSimFrame", "isaacsim.core.nodes.OgnIsaacRunOneSimulationFrame"]
+  - ["CreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"]
+  - ["RGBCamera", "isaacsim.ros2.bridge.ROS2CameraHelper"]
+  - ["CameraInfo", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"]
+
+connections:
+  - ["OnPlaybackTick.outputs:tick", "OnSimFrame.inputs:execIn"]
+  - ["OnSimFrame.outputs:step", "CreateRenderProduct.inputs:execIn"]
+  - ["CreateRenderProduct.outputs:execOut", "RGBCamera.inputs:execIn"]
+  - ["CreateRenderProduct.outputs:renderProductPath", "RGBCamera.inputs:renderProductPath"]
+  - ["CreateRenderProduct.outputs:execOut", "CameraInfo.inputs:execIn"]
+  - ["CreateRenderProduct.outputs:renderProductPath", "CameraInfo.inputs:renderProductPath"]
+
+values:
+  - ["CreateRenderProduct.inputs:cameraPrim", "${prim_path}"]
+  - ["CreateRenderProduct.inputs:height", "${height}"]
+  - ["CreateRenderProduct.inputs:width", "${width}"]
+
+  - ["CameraInfo.inputs:useSystemTime", True]
+
+  - ["RGBCamera.inputs:frameId", "${frame_id}"]
+  - ["RGBCamera.inputs:topicName", "${cam_color_topic}"]
+  - ["RGBCamera.inputs:type", "rgb"]
+  - ["RGBCamera.inputs:enabled", True]
+  - ["RGBCamera.inputs:useSystemTime", True]
+
+  - ["CameraInfo.inputs:frameId", "${frame_id}"]
+  - ["CameraInfo.inputs:topicName", "${cam_info_topic}"]
+  - ["CameraInfo.inputs:enabled", True]

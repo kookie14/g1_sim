@@ -1,0 +1,20 @@
+nodes:
+  - ["OnPlaybackTick", "omni.graph.action.OnPlaybackTick"]
+  - ["IsaacSimulationGate", "isaacsim.core.nodes.IsaacSimulationGate"]
+  - ["IsaacReadIMUNode", "isaacsim.sensors.physics.IsaacReadIMU"]
+  - ["ROS2PublishIMU", "isaacsim.ros2.bridge.ROS2PublishImu"]
+  - ["ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"]
+
+connections:
+  - ["OnPlaybackTick.outputs:tick", "IsaacSimulationGate.inputs:execIn"]
+  - ["IsaacSimulationGate.outputs:execOut", "IsaacReadIMUNode.inputs:execIn"]
+  - ["IsaacReadIMUNode.outputs:execOut", "ROS2PublishIMU.inputs:execIn"]
+  - ["IsaacReadIMUNode.outputs:angVel", "ROS2PublishIMU.inputs:angularVelocity"]
+  - ["IsaacReadIMUNode.outputs:linAcc", "ROS2PublishIMU.inputs:linearAcceleration"]
+  - ["IsaacReadIMUNode.outputs:orientation", "ROS2PublishIMU.inputs:orientation"]
+  - ["ReadSimTime.outputs:simulationTime", "ROS2PublishIMU.inputs:timeStamp"]
+
+values:
+  - ["IsaacReadIMUNode.inputs:imuPrim", "${imu_prim_path}"]
+  - ["ROS2PublishIMU.inputs:frameId", "${imu_frame_id}"]
+  - ["ROS2PublishIMU.inputs:topicName", "${imu_topic}"]

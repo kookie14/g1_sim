@@ -1,0 +1,21 @@
+nodes:
+  - ["OnPlaybackTick", "omni.graph.action.OnPlaybackTick"]
+  # SubscribeJointState /joint_states
+  - ["SubscribeJointState", "isaacsim.ros2.bridge.ROS2SubscribeJointState"]
+  # ArticulationController
+  - ["ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"]
+
+connections:
+  # SubscribeJointState /joint_states to control ArticulationController
+  - ["OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"]
+  - ["SubscribeJointState.outputs:execOut", "ArticulationController.inputs:execIn"]
+  - ["SubscribeJointState.outputs:jointNames", "ArticulationController.inputs:jointNames"]
+  - ["SubscribeJointState.outputs:positionCommand", "ArticulationController.inputs:positionCommand"]
+  - ["SubscribeJointState.outputs:velocityCommand", "ArticulationController.inputs:velocityCommand"]
+  - ["SubscribeJointState.outputs:effortCommand", "ArticulationController.inputs:effortCommand"]
+
+values:
+  # SubscribeJointState /joint_states
+  - ["SubscribeJointState.inputs:topicName", "${sim_joint_states}"]  # /joint_states
+  # ArticulationController
+  - ["ArticulationController.inputs:robotPath", "${prim_path}"]

@@ -1,0 +1,35 @@
+nodes:
+  - ["OnPlaybackTick", "omni.graph.action.OnPlaybackTick"]
+  # SubscribeJointState /joint_commands
+  - ["SubscribeJointState", "isaacsim.ros2.bridge.ROS2SubscribeJointState"]
+  # PublishJointState /joint_states
+  - ["ReadSimTime", "isaacsim.core.nodes.IsaacReadSimulationTime"]
+  - ["ROS2PublishClock", "isaacsim.ros2.bridge.ROS2PublishClock"]
+  - ["IsaacSimulationGate", "isaacsim.core.nodes.IsaacSimulationGate"]
+  - ["PublishJointState", "isaacsim.ros2.bridge.ROS2PublishJointState"]
+  # ArticulationController
+  - ["ArticulationController", "isaacsim.core.nodes.IsaacArticulationController"]
+
+connections:
+  # SubscribeJointState /joint_commands to control ArticulationController
+  - ["OnPlaybackTick.outputs:tick", "SubscribeJointState.inputs:execIn"]
+  - ["OnPlaybackTick.outputs:tick", "ArticulationController.inputs:execIn"]
+  - ["SubscribeJointState.outputs:jointNames", "ArticulationController.inputs:jointNames"]
+  - ["SubscribeJointState.outputs:positionCommand", "ArticulationController.inputs:positionCommand"]
+  - ["SubscribeJointState.outputs:velocityCommand", "ArticulationController.inputs:velocityCommand"]
+  - ["SubscribeJointState.outputs:effortCommand", "ArticulationController.inputs:effortCommand"]
+  # PublishJointState /joint_states
+  - ["ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"]
+  - ["OnPlaybackTick.outputs:tick", "ROS2PublishClock.inputs:execIn"]
+  - ["OnPlaybackTick.outputs:tick", "IsaacSimulationGate.inputs:execIn"]
+  - ["IsaacSimulationGate.outputs:execOut", "PublishJointState.inputs:execIn"]
+
+values:
+  # SubscribeJointState /joint_commands
+  - ["SubscribeJointState.inputs:topicName", "${sim_joint_commands_topic}"]  # /joint_commands
+  # PublishJointState /joint_states
+  - ["IsaacSimulationGate.inputs:step", 1]
+  - ["PublishJointState.inputs:targetPrim", "${target_prim}"]
+  - ["PublishJointState.inputs:topicName", "${sim_joint_states_topic}"]  # /joint_states
+  # ArticulationController
+  - ["ArticulationController.inputs:robotPath", "${prim_path}"]

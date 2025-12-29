@@ -1,0 +1,16 @@
+nodes:
+  - ["OnPlaybackTick", "omni.graph.action.OnPlaybackTick"]
+  - ["OnImpulseOpen", "omni.graph.action.OnImpulseEvent"]
+  - ["OnImpulseClose", "omni.graph.action.OnImpulseEvent"]
+  - ["OnImpulseStop", "omni.graph.action.OnImpulseEvent"]
+  - ["GripperController", "isaacsim.robot.manipulators.IsaacGripperController"]
+
+connections:  
+  - ["OnPlaybackTick.outputs:tick", "GripperController.inputs:execIn"]
+  - ["OnImpulseOpen.outputs:execOut", "GripperController.inputs:open"]
+  - ["OnImpulseClose.outputs:execOut", "GripperController.inputs:close"]
+  - ["OnImpulseStop.outputs:execOut", "GripperController.inputs:stop"]
+
+values:
+  - ["GripperController.inputs:articulationRootPrim", "maira7M"]
+  - ["GripperController.inputs:gripperPrim", "${gripper_prim_path}"]
