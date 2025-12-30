@@ -9,7 +9,9 @@ import omni.graph.core as og
 import pxr
 
 # ROS
-# import rclpy
+import rclpy
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from isaacsim import SimulationApp
 from isaacsim.core.api.controllers.articulation_controller import ArticulationController
 
@@ -26,15 +28,15 @@ from omni.isaac.core.utils import (  # noqa E402
 from omni.isaac.core.utils.types import ArticulationAction
 
 # ROS
-# from ros_node import RosNode
-# from sensor_msgs.msg import JointState
+from ros_node import RosNode
+from sensor_msgs.msg import JointState
 
 # Graph
 from src.g1_robot_sim import graph_config
 from src.g1_robot_sim.abstracts.graph import Graph
 from src.g1_robot_sim.abstracts.sensor import IMU, RealSense ,KannalaBrandt
 
-MODEL_DESCRIPTIONS_PATH = "/home/rtx3/cuctt14/LOCOMOTION/unitree_model/G1/29dof/usd/g1_29dof_rev_1_0"
+MODEL_DESCRIPTIONS_PATH = "/home/ros2_nh/ros2_ws/src/g1_sim/src/g1_robot_sim/assets"
 
 class Scene:
     def __init__(
@@ -87,16 +89,15 @@ class Scene:
             robot_position: list[float] = [0.0, 0.0, 1.0],
             robot_orientation: list[float] = [1.0, 0.0, 0.0, 0.0],
     ) -> None:
-        # robot_usd_file = (
-        #     self._asset_dir
-        #     + "/robots/"
-        #     + self._robot_name
-        #     + "/usd/"
-        #     + self._robot_file_name
-        #     + ".usd"
-        # )
-        robot_usd_file = "unitree_model/G1/29dof/usd/g1_29dof_rev_1_0/g1_29dof_rev_1_0.usd"
-        
+        robot_usd_file = (
+            self._asset_dir
+            + "/robots/"
+            + self._robot_name
+            + "/usd/"
+            + self._robot_file_name
+            + ".usd"
+        )
+        print(f"Spawning robot from USD file: {robot_usd_file}")
         robot_prim_path = "/" + self._robot_name
         prims.create_prim(
             robot_prim_path,
@@ -106,119 +107,119 @@ class Scene:
             usd_path=robot_usd_file,
         )
 
-        # if self.use_action_graph:
-        #     graph_handle = self.create_robot_omnigraph(robot_name=self._robot_name)
-        # else:
-        #     self.create_articulation_controller(robot_name=self._robot_name)
+        if self.use_action_graph:
+            graph_handle = self.create_robot_omnigraph(robot_name=self._robot_name)
+        else:
+            self.create_articulation_controller(robot_name=self._robot_name)
 
-    # def create_robot_omnigraph(
-    #         self,
-    #         robot_name: str,
-    #         graph_name: str = "g1_robot_graph.yml",
-    # ) -> Graph:
-    #     config_dir = os.path.dirname(graph_config.__file__)
-    #     config_path_ = os.path.join(config_dir, graph_name)
+    def create_robot_omnigraph(
+            self,
+            robot_name: str,
+            graph_name: str = "g1_robot_graph.yml",
+    ) -> Graph:
+        config_dir = os.path.dirname(graph_config.__file__)
+        config_path_ = os.path.join(config_dir, graph_name)
 
-    #     robot_omni_graph = Graph(
-    #         config_path=config_path_,
-    #         prim_path=f"/{robot_name}",
-    #         target_prim=f"/{robot_name}/joints/{self.target_prim_joint_name}",
-    #         sim_joint_states_topic=self.joint_states_topic,
-    #         sim_joint_commands_topic=self.joint_commands_topic,
-    #     )
-    #     og_key_create_node, og_keys_connect, og_keys_set_values = robot_omni_graph.get_graph()
-    #     keys = og.Controller.Keys
+        robot_omni_graph = Graph(
+            config_path=config_path_,
+            prim_path=f"/{robot_name}",
+            target_prim=f"/{robot_name}/joints/{self.target_prim_joint_name}",
+            sim_joint_states_topic=self.joint_states_topic,
+            sim_joint_commands_topic=self.joint_commands_topic,
+        )
+        og_key_create_node, og_keys_connect, og_keys_set_values = robot_omni_graph.get_graph()
+        keys = og.Controller.Keys
 
-    #     graph_path = f"/{robot_name}/RobotActionGraph"
-    #     (graph_handle, list_of_nodes, _, _) = og.Controller.edit(
-    #         {
-    #             "graph_path": graph_path,
-    #             "evaluator_name": "execution",
-    #             # "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
-    #         },
-    #         {
-    #             keys.CREATE_NODES: og_key_create_node,
-    #             keys.SET_VALUES: og_keys_set_values,
-    #             keys.CONNECT: og_keys_connect,
-    #         },
-    #     )
-    #     return graph_handle
+        graph_path = f"/{robot_name}/RobotActionGraph"
+        (graph_handle, list_of_nodes, _, _) = og.Controller.edit(
+            {
+                "graph_path": graph_path,
+                "evaluator_name": "execution",
+                # "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+            },
+            {
+                keys.CREATE_NODES: og_key_create_node,
+                keys.SET_VALUES: og_keys_set_values,
+                keys.CONNECT: og_keys_connect,
+            },
+        )
+        return graph_handle
 
-    # def create_articulation_controller(
-    #         self,
-    #         robot_name: str,
-    # ):
-    #     self.articulation_controller = ArticulationController()
-    #     robot_prim_path = "/" + robot_name
-    #     articulation_view = ArticulationView(
-    #         prim_paths_expr=robot_prim_path, name=robot_name + "_view"
-    #     )
-    #     self.world.scene.add(articulation_view)
-    #     self.articulation_controller.initialize(articulation_view)
+    def create_articulation_controller(
+            self,
+            robot_name: str,
+    ):
+        self.articulation_controller = ArticulationController()
+        robot_prim_path = "/" + robot_name
+        articulation_view = ArticulationView(
+            prim_paths_expr=robot_prim_path, name=robot_name + "_view"
+        )
+        self.world.scene.add(articulation_view)
+        self.articulation_controller.initialize(articulation_view)
 
-    # def spawn_objects(
-    #         self,
-    #         objects: dict,
-    # ) -> None:
-    #     for prim_name, value in objects.items():
-    #         sub_dir = value.get("sub_dir", "./")
-    #         usd_file = (
-    #             self._asset_dir
-    #             + "/objects/"
-    #             + sub_dir
-    #             + "/"
-    #             + value["name"]
-    #             + "/"
-    #             + value["name"]
-    #             + ".usd"
-    #         )
-    #         scale = value.get("scale", [1.0, 1.0, 1.0])
-    #         prims.create_prim(
-    #             "/" + prim_name,
-    #             "Xform",
-    #             position=value["position"],
-    #             orientation=value["orientation"],
-    #             scale=scale,
-    #             usd_path=usd_file,
-    #         )
+    def spawn_objects(
+            self,
+            objects: dict,
+    ) -> None:
+        for prim_name, value in objects.items():
+            sub_dir = value.get("sub_dir", "./")
+            usd_file = (
+                self._asset_dir
+                + "/objects/"
+                + sub_dir
+                + "/"
+                + value["name"]
+                + "/"
+                + value["name"]
+                + ".usd"
+            )
+            scale = value.get("scale", [1.0, 1.0, 1.0])
+            prims.create_prim(
+                "/" + prim_name,
+                "Xform",
+                position=value["position"],
+                orientation=value["orientation"],
+                scale=scale,
+                usd_path=usd_file,
+            )
 
-    # def setup_joint_drives(self):
-    #     self.stage = omni.usd.get_context().get_stage()
+    def setup_joint_drives(self):
+        self.stage = omni.usd.get_context().get_stage()
 
-    #     self.joint_drives = {}
+        self.joint_drives = {}
 
-    #     for joint_name in self.joint_names + self.hand_joint_names:
-    #         # Ignore torso_joint
-    #         if joint_name == self.torso_joint_name:
-    #             continue
+        for joint_name in self.joint_names + self.hand_joint_names:
+            # Ignore torso_joint
+            if joint_name == self.torso_joint_name:
+                continue
 
-    #         joint_path = f"/{self._robot_name}/joints/{joint_name}"
-    #         joint_prim = self.stage.GetPrimAtPath(joint_path)
+            joint_path = f"/{self._robot_name}/joints/{joint_name}"
+            joint_prim = self.stage.GetPrimAtPath(joint_path)
 
-    #         if not joint_prim.IsValid():
-    #             print(f"[WARN] Joint prim not found: {joint_path}")
-    #             continue
+            if not joint_prim.IsValid():
+                print(f"[WARN] Joint prim not found: {joint_path}")
+                continue
 
-    #         drive = pxr.UsdPhysics.DriveAPI.Apply(joint_prim, "angular")
-    #         drive.CreateStiffnessAttr()
-    #         drive.CreateDampingAttr()
-    #         drive.CreateTargetPositionAttr()
-    #         drive.CreateTargetVelocityAttr().Set(0.0)
+            drive = pxr.UsdPhysics.DriveAPI.Apply(joint_prim, "angular")
+            drive.CreateStiffnessAttr()
+            drive.CreateDampingAttr()
+            drive.CreateTargetPositionAttr()
+            drive.CreateTargetVelocityAttr().Set(0.0)
 
-    #         # Add joint friction and armature attributes
-    #         joint_physics_api = pxr.PhysxSchema.PhysxJointAPI.Apply(joint_prim)
-    #         joint_physics_api.CreateJointFrictionAttr().Set(0.01)
-    #         joint_physics_api.CreateArmatureAttr().Set(0.1)
+            # Add joint friction and armature attributes
+            joint_physics_api = pxr.PhysxSchema.PhysxJointAPI.Apply(joint_prim)
+            joint_physics_api.CreateJointFrictionAttr().Set(0.01)
+            joint_physics_api.CreateArmatureAttr().Set(0.1)
 
-    #         self.joint_drives[joint_name] = drive
+            self.joint_drives[joint_name] = drive
 
-    #         if joint_name in self.joint_names:
-    #             drive.GetStiffnessAttr().Set(0.0)
-    #             drive.GetDampingAttr().Set(1.0)
-    #             drive.GetMaxForceAttr().Set(1000000000000.0)
-    #         elif joint_name in self.hand_joint_names:
-    #             drive.GetStiffnessAttr().Set(1.0)
-    #             drive.GetDampingAttr().Set(0.25)
+            if joint_name in self.joint_names:
+                drive.GetStiffnessAttr().Set(0.0)
+                drive.GetDampingAttr().Set(1.0)
+                drive.GetMaxForceAttr().Set(1000000000000.0)
+            elif joint_name in self.hand_joint_names:
+                drive.GetStiffnessAttr().Set(1.0)
+                drive.GetDampingAttr().Set(0.25)
 
     def get_robot(
             self,
@@ -243,77 +244,77 @@ class Scene:
 
         return _robot
 
-    # def init_communication_node(
-    #         self,
-    #         robot_name: str,
-    #         ros_node=None,
-    # ):
-    #     self._robot = self.get_robot(robot_name)
+    def init_communication_node(
+            self,
+            robot_name: str,
+            ros_node=None,
+    ):
+        self._robot = self.get_robot(robot_name)
 
-    #     if ros_node is None:
-    #         self.ros_node = RosNode(
-    #             robot=self._robot,
-    #             robot_name=robot_name,
-    #             joint_states_topic=self.joint_states_topic,
-    #             joint_commands_topic=self.joint_commands_topic,
-    #             physics_dt=self.physics_dt,
-    #         )
-    #     else:
-    #         self.ros_node = ros_node
+        if ros_node is None:
+            self.ros_node = RosNode(
+                robot=self._robot,
+                robot_name=robot_name,
+                joint_states_topic=self.joint_states_topic,
+                joint_commands_topic=self.joint_commands_topic,
+                physics_dt=self.physics_dt,
+            )
+        else:
+            self.ros_node = ros_node
 
-    #     self.ros_node.init_publisher_subscription()
-    #     self.ros_node.init_publish_joint_states_thread()
+        self.ros_node.init_publisher_subscription()
+        self.ros_node.init_publish_joint_states_thread()
 
-    # def parse_joint_commands(self, joint_commands: JointState):
-    #     joint_indices = None
-    #     joint_positions = None
-    #     joint_velocities = None
-    #     joint_efforts = None
+    def parse_joint_commands(self, joint_commands: JointState):
+        joint_indices = None
+        joint_positions = None
+        joint_velocities = None
+        joint_efforts = None
 
-    #     if self.ros_node:
-    #         if joint_commands is not None:
-    #             joint_indices = []
-    #             if len(joint_commands.position) > 0:
-    #                 joint_positions = []
-    #             if len(joint_commands.velocity) > 0:
-    #                 joint_velocities = []
-    #             if len(joint_commands.effort) > 0:
-    #                 joint_efforts = []
+        if self.ros_node:
+            if joint_commands is not None:
+                joint_indices = []
+                if len(joint_commands.position) > 0:
+                    joint_positions = []
+                if len(joint_commands.velocity) > 0:
+                    joint_velocities = []
+                if len(joint_commands.effort) > 0:
+                    joint_efforts = []
 
-    #             for joint_idx, joint_name in enumerate(joint_commands.name):
-    #                 if joint_name in self._robot.dof_names:
-    #                     dof_idx = self._robot.dof_names.index(joint_name)
-    #                     joint_indices.append(dof_idx)
-    #                     if joint_idx < len(joint_commands.position):
-    #                         joint_positions.append(joint_commands.position[joint_idx])
-    #                     if joint_idx < len(joint_commands.velocity):
-    #                         joint_velocities.append(joint_commands.velocity[joint_idx])
-    #                     if joint_idx < len(joint_commands.effort):
-    #                         joint_efforts.append(joint_commands.effort[joint_idx])
+                for joint_idx, joint_name in enumerate(joint_commands.name):
+                    if joint_name in self._robot.dof_names:
+                        dof_idx = self._robot.dof_names.index(joint_name)
+                        joint_indices.append(dof_idx)
+                        if joint_idx < len(joint_commands.position):
+                            joint_positions.append(joint_commands.position[joint_idx])
+                        if joint_idx < len(joint_commands.velocity):
+                            joint_velocities.append(joint_commands.velocity[joint_idx])
+                        if joint_idx < len(joint_commands.effort):
+                            joint_efforts.append(joint_commands.effort[joint_idx])
 
-    #     return (
-    #         joint_indices,
-    #         joint_positions,
-    #         joint_velocities,
-    #         joint_efforts,
-    #     )
+        return (
+            joint_indices,
+            joint_positions,
+            joint_velocities,
+            joint_efforts,
+        )
 
-    # def apply_articulation_action(
-    #         self,
-    #         joint_indices,
-    #         joint_positions,
-    #         joint_velocities,
-    #         joint_efforts,
-    # ):
-    #     robot_action = ArticulationAction(
-    #         joint_indices=joint_indices,
-    #         joint_positions=joint_positions,
-    #         joint_velocities=joint_velocities,
-    #         joint_efforts=joint_efforts,
-    #     )
-    #     self.articulation_controller.apply_action(robot_action)
-    #     applied_action = self.articulation_controller.get_applied_action()
-    #     return applied_action
+    def apply_articulation_action(
+            self,
+            joint_indices,
+            joint_positions,
+            joint_velocities,
+            joint_efforts,
+    ):
+        robot_action = ArticulationAction(
+            joint_indices=joint_indices,
+            joint_positions=joint_positions,
+            joint_velocities=joint_velocities,
+            joint_efforts=joint_efforts,
+        )
+        self.articulation_controller.apply_action(robot_action)
+        applied_action = self.articulation_controller.get_applied_action()
+        return applied_action
 
     def run(self):
         self.sim_app.update()
@@ -331,50 +332,50 @@ class Scene:
             # Run with a fixed step size
             self.simulation_context.step(render=True)
 
-        #     if not self.use_action_graph:
-        #         # Get input for ArticulationController
-        #         # After simulation_context.step()
-        #         rclpy.spin_once(self.ros_node, timeout_sec=0.001)
+            if not self.use_action_graph:
+                # Get input for ArticulationController
+                # After simulation_context.step()
+                rclpy.spin_once(self.ros_node, timeout_sec=0.001)
 
-        #         # Body
-        #         if self.ros_node.joint_commands is not None:
-        #             (
-        #                 joint_indices,
-        #                 joint_positions,
-        #                 joint_velocities,
-        #                 joint_efforts,
-        #             ) = self.parse_joint_commands(self.ros_node.joint_commands)
+                # Body
+                if self.ros_node.joint_commands is not None:
+                    (
+                        joint_indices,
+                        joint_positions,
+                        joint_velocities,
+                        joint_efforts,
+                    ) = self.parse_joint_commands(self.ros_node.joint_commands)
 
-        #             # Apply articulation action
-        #             if joint_indices and len(joint_indices) > 0:
-        #                 self.apply_articulation_action(
-        #                     joint_indices,
-        #                     joint_positions,
-        #                     joint_velocities,
-        #                     joint_efforts,
-        #                 )
+                    # Apply articulation action
+                    if joint_indices and len(joint_indices) > 0:
+                        self.apply_articulation_action(
+                            joint_indices,
+                            joint_positions,
+                            joint_velocities,
+                            joint_efforts,
+                        )
 
-        #         # Hand
-        #         if self.ros_node.hand_joint_commands is not None:
-        #             (
-        #                 joint_indices,
-        #                 joint_positions,
-        #                 joint_velocities,
-        #                 joint_efforts,
-        #             ) = self.parse_joint_commands(self.ros_node.hand_joint_commands)
+                # Hand
+                if self.ros_node.hand_joint_commands is not None:
+                    (
+                        joint_indices,
+                        joint_positions,
+                        joint_velocities,
+                        joint_efforts,
+                    ) = self.parse_joint_commands(self.ros_node.hand_joint_commands)
 
-        #             # Apply articulation action
-        #             if joint_indices and len(joint_indices) > 0:
-        #                 self.apply_articulation_action(
-        #                     joint_indices,
-        #                     joint_positions,
-        #                     joint_velocities,
-        #                     joint_efforts,
-        #                 )
+                    # Apply articulation action
+                    if joint_indices and len(joint_indices) > 0:
+                        self.apply_articulation_action(
+                            joint_indices,
+                            joint_positions,
+                            joint_velocities,
+                            joint_efforts,
+                        )
 
-        # if not self.use_action_graph:
-        #     self.ros_node.destroy_node()
-        #     rclpy.shutdown()
+        if not self.use_action_graph:
+            self.ros_node.destroy_node()
+            rclpy.shutdown()
 
         self.simulation_context.stop()
         self.sim_app.close()

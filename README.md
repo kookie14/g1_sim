@@ -13,4 +13,4 @@ This package simplifies working with IsaacSIM.
 
 ### Run Robot G1 simulation
 
-Run `python apps/g1_simple.py` to open Robot g1 with articulation controller for moveit2.
+Run `python apps/g1.py` to open Robot g1 with articulation controller for moveit2.

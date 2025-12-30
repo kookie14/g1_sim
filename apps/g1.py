@@ -1,7 +1,8 @@
 # Copyright (c) 2025 VinRobotics. All rights reserved
 
 import os
-
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from isaacsim import SimulationApp
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
@@ -18,8 +19,9 @@ extensions.enable_extension("omni.isaac.ros2_bridge")
 
 from src.g1_robot_sim import assets
 
-EVN_PATH = os.path.dirname(assets.__file__) + "/env/default_environment.usd"
-BACKGROUND_STAGE_PATH = "/background"
+EVN_PATH = "/home/ros2_nh/ros2_ws/src/g1_sim/src/g1_robot_sim/assets" + "/env/factory/Collected_warehouse_with_forklifts/warehouse_with_forklifts.usd"
+BACKGROUND_STAGE_PATH = "/World/Warehouse"
+stage.add_reference_to_stage(EVN_PATH, BACKGROUND_STAGE_PATH)
 stage.add_reference_to_stage(EVN_PATH, BACKGROUND_STAGE_PATH)
 
 from scene import Scene, create_rgbd_camera, create_imu
@@ -28,7 +30,7 @@ from scene import Scene, create_rgbd_camera, create_imu
 def main():
     # Example values
     robot_name = "g1"
-    robot_file_name = "g1"
+    robot_file_name = "g1_29dof_rev_1_0"
     target_prim_joint_name = "left_hip_pitch_joint"
 
     upper_body_root_link_name = "torso_link"
@@ -73,33 +75,33 @@ def main():
         imu_link_name=lower_body_root_link_name,
     )
 
-    objects = {
-        "ThorlabsTable": {
-            "name": "ThorlabsTable",
-            "position": [1.2, -0.02765, 0.81912],
-            "orientation": [0.0, 0.0, 0.0, -1.0],  
-            "scale": [1.0, 1.0, 1.0],
-        },
-        "mustard": {
-            "name": "mustard",
-            "position": [0.6141, 0.09126, 0.89935],
-            "orientation": [0.0, 0.0, 0.0, -1.0],
-            "scale": [1.0, 1.0, 1.0],
-        },
-        "cracker_box": {
-            "name": "cracker_box",
-            "position": [0.77648, 0.18337, 0.90998],
-            "orientation": [0.0, 0.0, 0.0, -1.0],
-            "scale": [1.0, 1.0, 1.0],
-        },
-        "chewing_gum_cool_air": {
-            "name": "chewing_gum_cool_air",
-            "position": [0.64641, -0.09741, 0.84204],
-            "orientation": [0.0, 0.0, 0.0, -1.0],
-            "scale": [1.0, 1.0, 1.0],
-        },
-    }
-    scene.spawn_objects(objects=objects)
+    # objects = {
+    #     "ThorlabsTable": {
+    #         "name": "ThorlabsTable",
+    #         "position": [1.2, -0.02765, 0.81912],
+    #         "orientation": [0.0, 0.0, 0.0, -1.0],  
+    #         "scale": [1.0, 1.0, 1.0],
+    #     },
+    #     "mustard": {
+    #         "name": "mustard",
+    #         "position": [0.6141, 0.09126, 0.89935],
+    #         "orientation": [0.0, 0.0, 0.0, -1.0],
+    #         "scale": [1.0, 1.0, 1.0],
+    #     },
+    #     "cracker_box": {
+    #         "name": "cracker_box",
+    #         "position": [0.77648, 0.18337, 0.90998],
+    #         "orientation": [0.0, 0.0, 0.0, -1.0],
+    #         "scale": [1.0, 1.0, 1.0],
+    #     },
+    #     "chewing_gum_cool_air": {
+    #         "name": "chewing_gum_cool_air",
+    #         "position": [0.64641, -0.09741, 0.84204],
+    #         "orientation": [0.0, 0.0, 0.0, -1.0],
+    #         "scale": [1.0, 1.0, 1.0],
+    #     },
+    # }
+    # scene.spawn_objects(objects=objects)
 
     scene.run()
 

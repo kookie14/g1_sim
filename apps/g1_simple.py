@@ -1,7 +1,8 @@
 # Copyright (c) 2025 VinRobotics. All rights reserved
 
 import os
-
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from isaacsim import SimulationApp
 
 CONFIG = {"renderer": "RayTracedLighting", "headless": False}
@@ -37,7 +38,7 @@ from scene import Scene, create_rgbd_camera, create_imu
 
 def main():
     # Example values
-    robot_name = "g1_29dof_rev_1_0"
+    robot_name = "g1"
     robot_file_name = "g1"
     target_prim_joint_name = "left_hip_pitch_joint"
 
