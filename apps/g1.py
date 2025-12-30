@@ -22,7 +22,6 @@ from src.g1_robot_sim import assets
 EVN_PATH = "/home/ros2_nh/ros2_ws/src/g1_sim/src/g1_robot_sim/assets" + "/env/factory/Collected_warehouse_with_forklifts/warehouse_with_forklifts.usd"
 BACKGROUND_STAGE_PATH = "/World/Warehouse"
 stage.add_reference_to_stage(EVN_PATH, BACKGROUND_STAGE_PATH)
-stage.add_reference_to_stage(EVN_PATH, BACKGROUND_STAGE_PATH)
 
 from scene import Scene, create_rgbd_camera, create_imu
 
@@ -49,7 +48,7 @@ def main():
     # Robot
     scene.spawn_robot(
         robot_position=[0.0, 0.0, 0.79311],
-        robot_orientation=[1.0, 0.0, 0.0, 0.0],  # [qw, qx, qy ,qz]
+        robot_orientation=[1.0, 0.0, 0.0, 0.0],  # [qw, qx, qy ,qz],
     )
 
     #HEAD CAM 
