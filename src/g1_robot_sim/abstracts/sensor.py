@@ -1,4 +1,3 @@
-# Copyright (c) 2025 VinRobotics. All rights reserved
 # Reference:
 #   https://docs.isaacsim.omniverse.nvidia.com/4.5.0/sensors/isaacsim_sensors_camera.html
 #   https://docs.isaacsim.omniverse.nvidia.com/4.5.0/sensors/isaacsim_sensors_physics_imu.html

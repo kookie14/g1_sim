@@ -1,4 +1,3 @@
-# Copyright (c) 2025 VinRobotics. All rights reserved
 
 import time
 

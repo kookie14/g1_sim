@@ -1,4 +1,3 @@
-# Copyright (c) 2025 VinRobotics. All rights reserved
 
 import os
 
@@ -10,6 +9,7 @@ import pxr
 
 # ROS
 import rclpy
+from rclpy.executors import SingleThreadedExecutor
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from isaacsim import SimulationApp
@@ -49,6 +49,7 @@ class Scene:
             target_prim_joint_name: str = "torso_joint",
             joint_states_topic: str = "/joint_states",
             joint_commands_topic: str = "/joint_commands",
+            imu_topic: str = "/imu",
             joint_names: list[str] = [],
             hand_joint_names: list[str] = [],
             physics_dt: float = 1.0 / 200,  # 200Hz
@@ -66,6 +67,7 @@ class Scene:
         self.target_prim_joint_name = target_prim_joint_name
         self.joint_states_topic = joint_states_topic
         self.joint_commands_topic = joint_commands_topic
+        self.imu_topic = imu_topic
         self.joint_names = joint_names
         self.hand_joint_names = hand_joint_names
         self.physics_dt = physics_dt
@@ -79,10 +81,14 @@ class Scene:
         self.ros_node = None
         self.articulation_controller = None
 
-        self.simulation_context = SimulationContext(
-            stage_units_in_meters=1.0, physics_dt=self.physics_dt, rendering_dt=self.rendering_dt
+        self.world = World(
+            physics_dt=self.physics_dt,
+            rendering_dt=self.rendering_dt,
+            stage_units_in_meters=1.0,
         )
-        self.simulation_context.get_physics_context().enable_gpu_dynamics(enable_gpu_dynamics)
+
+        self.world.get_physics_context().enable_gpu_dynamics(enable_gpu_dynamics)
+        # self.init_communication_node(robot_name=self._robot_name)
 
     def spawn_robot(
             self,
@@ -106,6 +112,7 @@ class Scene:
             orientation=robot_orientation,
             usd_path=robot_usd_file,
         )
+        self.sim_app.update()
 
         if self.use_action_graph:
             graph_handle = self.create_robot_omnigraph(robot_name=self._robot_name)
@@ -221,26 +228,65 @@ class Scene:
                 drive.GetStiffnessAttr().Set(1.0)
                 drive.GetDampingAttr().Set(0.25)
 
-    def get_robot(
-            self,
-            robot_name: str,
-    ) -> Robot:
-        _robot = self.simulation_context.scene.get_object(robot_name)
-        if _robot is None:
-            robot_prim_path = "/" + robot_name
-            if self.simulation_context.stage.GetPrimAtPath(robot_prim_path).IsValid():
-                print(
-                    f"⚠️ Robot prim '{robot_prim_path}' exists but is not registered in scene. Attempting to wrap it."
-                )
-            else:
-                print(f"⚠️ Robot prim '{robot_prim_path}' does not exists. Creating new one.")
-            _robot = Robot(prim_path=robot_prim_path, name=robot_name)
+    def create_robot_prim(self, robot_name: str):
+        robot_prim_path = f"/{robot_name}"
 
-            try:
-                print(f"➕ Adding robot '{robot_name}' to scene...")
-                self.simulation_context.scene.add(_robot)
-            except Exception as e:
-                print(f"🔁 Skipping add: {e}")
+        # If prim already exists, do nothing
+        if self.world.stage.GetPrimAtPath(robot_prim_path).IsValid():
+            return
+
+
+        robot_usd_file = (
+            self._asset_dir
+            + "/robots/"
+            + self._robot_name
+            + "/usd/"
+            + self._robot_file_name
+            + ".usd"
+        )
+
+        print(f"➕ Creating robot prim at {robot_prim_path}")
+        print(f"    USD file: {robot_usd_file}")
+
+        prims.create_prim(
+            prim_path=robot_prim_path,
+            prim_type="Xform",
+            usd_path=robot_usd_file,
+            position=[0.0, 0.0, 1.0],
+            orientation=[1.0, 0.0, 0.0, 0.0],  # wxyz
+        )
+
+        # REQUIRED: allow PhysX to discover articulation
+        self.sim_app.update()
+
+
+    def get_robot(self, robot_name: str) -> Robot:
+        self.create_robot_prim(robot_name=robot_name)
+
+        # 1. Try to retrieve robot from World scene registry
+        _robot = self.world.scene.get_object(robot_name)
+        if _robot is not None:
+            return _robot
+
+        # 2. If prim exists but not wrapped, wrap it
+        robot_prim_path = f"/{robot_name}"
+        if not self.world.stage.GetPrimAtPath(robot_prim_path).IsValid():
+            raise RuntimeError(f"Robot prim '{robot_prim_path}' does not exist on stage")
+
+        print(
+            f"⚠️ Robot prim '{robot_prim_path}' exists but is not registered in scene. Wrapping it."
+        )
+
+        _robot = Robot(
+            prim_path=robot_prim_path,
+            name=robot_name,
+        )
+
+        # 3. Register with World scene
+        self.world.scene.add(_robot)
+
+        return _robot
+
 
         return _robot
 
@@ -257,6 +303,7 @@ class Scene:
                 robot_name=robot_name,
                 joint_states_topic=self.joint_states_topic,
                 joint_commands_topic=self.joint_commands_topic,
+                imu_topic=self.imu_topic,
                 physics_dt=self.physics_dt,
             )
         else:
@@ -317,25 +364,34 @@ class Scene:
         return applied_action
 
     def run(self):
-        self.sim_app.update()
+        if not rclpy.ok():
+            rclpy.init(args=None)
+        self.executor = SingleThreadedExecutor()
+        self.executor.add_node(self.ros_node)
+        # self.world.reset()
+        self.world.reset()   # ONCE
+        self.world.play()    # ONCE
+        # self.sim_app.update()
         # Necessary
         # Auto call simulation_context.play() after init
-        self.simulation_context.initialize_physics()
+        # self.simulation_context.initialize_physics()
 
         while self.sim_app.is_running():
-            if not self.use_action_graph:
+            # if not self.use_action_graph:
                 # Detect reset then auto init physics and play sim
-                if self.simulation_context.is_stopped():
-                    self.simulation_context.step(render=False)
-                    self.simulation_context.initialize_physics()
+                # if self.simulation_context.is_stopped():
+                #     self.simulation_context.step(render=False)
+                #     self.simulation_context.initialize_physics()
 
             # Run with a fixed step size
-            self.simulation_context.step(render=True)
+            # self.simulation_context.step(render=True)
 
             if not self.use_action_graph:
                 # Get input for ArticulationController
                 # After simulation_context.step()
-                rclpy.spin_once(self.ros_node, timeout_sec=0.001)
+                # rclpy.spin_once(self.ros_node, timeout_sec=0.001)
+                self.world.step(render=True)
+                self.executor.spin_once(timeout_sec=0.0)
 
                 # Body
                 if self.ros_node.joint_commands is not None:

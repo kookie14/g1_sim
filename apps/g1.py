@@ -1,4 +1,4 @@
-# Copyright (c) 2025 VinRobotics. All rights reserved
+
 
 import os
 import sys
@@ -14,6 +14,8 @@ from omni.isaac.core.utils import (  # noqa E402
     extensions,
     stage,
 )
+from omni.isaac.core import World
+import torch
 
 extensions.enable_extension("omni.isaac.ros2_bridge")
 
@@ -37,12 +39,20 @@ def main():
     cam_prim_path = f"/{robot_name}/{upper_body_root_link_name}/camera"
     imu_prim_path = f"/{robot_name}/{lower_body_root_link_name}/imu_sensor"
 
+    world = World(
+        physics_dt=0.005,
+        rendering_dt=1.0 / 60.0,
+        stage_units_in_meters=1.0,
+    )
+
     # Scene
     scene = Scene(
         sim_app=simulation_app,
+        world=world,
         robot_name=robot_name,
         robot_file_name=robot_file_name,
         target_prim_joint_name=target_prim_joint_name,
+        use_action_graph=False,
     )
 
     # Robot
@@ -50,6 +60,7 @@ def main():
         robot_position=[0.0, 0.0, 0.79311],
         robot_orientation=[1.0, 0.0, 0.0, 0.0],  # [qw, qx, qy ,qz],
     )
+    scene.init_communication_node(robot_name=robot_name)
 
     #HEAD CAM 
     #TODO replace fx fy cx cy by your camera intrinsic 
@@ -72,6 +83,7 @@ def main():
     create_imu(
         imu_prim_path=imu_prim_path,
         imu_link_name=lower_body_root_link_name,
+        imu_topic="/imu",
     )
 
     # objects = {
@@ -101,6 +113,7 @@ def main():
     #     },
     # }
     # scene.spawn_objects(objects=objects)
+
 
     scene.run()
 

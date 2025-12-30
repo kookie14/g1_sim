@@ -1,4 +1,4 @@
-# Copyright (c) 2025 VinRobotics. All rights reserved
+#. All rights reserved
 
 # Use the official ROS 2 Humble base image
 FROM ros:humble-ros-base
